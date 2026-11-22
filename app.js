@@ -1,4 +1,51 @@
 (()=>{'use strict';
+(()=>{'use strict';
+/* Local error log with bounded retention. This never touches Supabase Auth or account records. */
+const LOG_KEY='aevstudio:error-logs:v1';
+const LOG_MAX=500,LOG_DAYS=30,LOG_MAX_AGE=LOG_DAYS*86400000;
+function cleanLogText(value){
+ let text=String(value??'').replace(/https?:\\/\\/[^\\s?#]+[^\\s]*/g,url=>url.split(/[?#]/)[0]);
+ text=text.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi,'[email]');
+ text=text.replace(/(access_token|refresh_token|api[_-]?key|password|passwd|secret)(\\s*[:=]\\s*)[^\\s,;&]+/gi,'$1$2[redacted]');
+ return text.slice(0,500);
+}
+function readLogs(){
+ try{const value=JSON.parse(localStorage.getItem(LOG_KEY)||'[]');return Array.isArray(value)?value.filter(x=>x&&Number.isFinite(x.time)&&typeof x.message==='string'):[]}
+ catch(_){return []}
+}
+function rotateLogs(){
+ const cutoff=Date.now()-LOG_MAX_AGE;
+ let logs=readLogs().filter(x=>x.time>=cutoff).slice(-LOG_MAX);
+ try{localStorage.setItem(LOG_KEY,JSON.stringify(logs))}
+ catch(_){
+  try{logs=logs.slice(-100);localStorage.setItem(LOG_KEY,JSON.stringify(logs))}
+  catch(__){return []}
+ }
+ return logs;
+}
+function addLog(type,message,source,line,column){
+ const logs=rotateLogs();
+ logs.push({time:Date.now(),type:cleanLogText(type),message:cleanLogText(message),source:cleanLogText(source||'').split(/[?#]/)[0].slice(0,180),line:Number(line)||0,column:Number(column)||0});
+ try{localStorage.setItem(LOG_KEY,JSON.stringify(logs.slice(-LOG_MAX)))}
+ catch(_){try{localStorage.setItem(LOG_KEY,JSON.stringify(logs.slice(-100)))}catch(__){}}
+}
+rotateLogs();
+window.addEventListener('error',event=>{
+ if(event&&event.message)addLog('error',event.message,event.filename,event.lineno,event.colno);
+ else if(event&&event.target&&event.target!==window)addLog('resource-error','リソースの読み込みに失敗しました',event.target.src||event.target.href||'');
+});
+window.addEventListener('unhandledrejection',event=>{
+ const reason=event.reason;
+ addLog('unhandled-rejection',reason&&reason.message?reason.message:typeof reason==='string'?reason:'未処理の非同期エラー');
+});
+window.AEVSTUDIO_LOGS=Object.freeze({
+ get:()=>rotateLogs().map(x=>({...x})),
+ count:()=>rotateLogs().length,
+ clear:()=>{try{localStorage.removeItem(LOG_KEY);return true}catch(_){return false}},
+ retentionDays:LOG_DAYS,
+ maxEntries:LOG_MAX
+});
+})();
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const config=window.AEVSTUDIO_CONFIG||{}, configured=config.supabaseUrl&&config.supabaseAnonKey&&!config.supabaseAnonKey.startsWith('PASTE_');
 let client=null,user=null,projects=[],current=null,mode='visual',signup=false,selectedTemplate='blank',realtimeChannel=null,autosaveTimer=null;
