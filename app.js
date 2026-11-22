@@ -4,9 +4,9 @@
 const LOG_KEY='aevstudio:error-logs:v1';
 const LOG_MAX=500,LOG_DAYS=30,LOG_MAX_AGE=LOG_DAYS*86400000;
 function cleanLogText(value){
- let text=String(value??'').replace(/https?:\\/\\/[^\\s?#]+[^\\s]*/g,url=>url.split(/[?#]/)[0]);
- text=text.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi,'[email]');
- text=text.replace(/(access_token|refresh_token|api[_-]?key|password|passwd|secret)(\\s*[:=]\\s*)[^\\s,;&]+/gi,'$1$2[redacted]');
+ let text=String(value??'').replace(/https?:\/\/[^\s?#]+[^\s]*/g,url=>url.split(/[?#]/)[0]);
+ text=text.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[email]');
+ text=text.replace(/(access_token|refresh_token|api[_-]?key|password|passwd|secret)(\s*[:=]\s*)[^\s,;&]+/gi,'$1$2[redacted]');
  return text.slice(0,500);
 }
 function readLogs(){
