@@ -130,6 +130,7 @@
 <details class="guide-item"><summary>7-3. 入力フォーム・アップロード</summary><div class="guide-item-body"><p>フォームの入力値はブラウザー側だけでなく、サーバー側でも検証してください。ファイルを受け付ける場合は、ファイル形式・サイズ・保存先・閲覧権限を確認します。</p></div></details>
 <details class="guide-item"><summary>7-4. 外部サービス・画像の利用</summary><div class="guide-item-body"><p>外部APIや画像URLを使う場合は、サービスの利用規約、公開範囲、利用権限を確認してください。APIキーを公開コードへ埋め込む必要がある設計は避けてください。</p></div></details>
 <details class="guide-item"><summary>7-5. 保存・バックアップ</summary><div class="guide-item-body"><p>大きな変更を行う前に保存し、必要ならZIPを書き出してバックアップしてください。テンプレートの切り替えやコードの一括置換を行った後は、ページ内容が残っているか確認します。</p></div></details>
+<details class="guide-item"><summary>7-6. エラーログとログローテーション</summary><div class="guide-item-body"><p>AevStudioの制作画面では、ブラウザー内で発生したJavaScriptエラーや未処理の非同期エラーを、原因確認用のログとして利用中の端末・ブラウザーに保存します。ログは端末ごとに保存され、別端末とは自動同期されません。</p><ul><li><b>保存期間：</b>30日を過ぎたログは自動削除。</li><li><b>保存件数：</b>最大500件。上限を超えた場合は古いものから整理。</li><li><b>保存容量：</b>端末の保存容量が不足した場合は、件数を減らして保存を試みます。</li><li><b>対象：</b>JavaScriptエラー、未処理の非同期エラー、一部のリソース読み込みエラー。</li></ul><p>この整理処理を「ログローテーション」といいます。ログの削除・整理はエラー記録だけを対象にし、メールアドレス、Supabase Authの登録ユーザー、パスワード、プロジェクトデータを削除する処理ではありません。ログには個人情報や秘密情報を含めないよう一部の文字列を伏せますが、エラー文に入力内容などが含まれる可能性もあるため、ログを共有する前に内容を確認してください。</p><div class="guide-note">この機能はブラウザー内のエラーログ管理です。GitHub PagesのサーバーログやSupabase側の監査ログを管理・削除する機能ではありません。</div></div></details>
 </section>
 
 <section class="guide-group" id="trouble">
